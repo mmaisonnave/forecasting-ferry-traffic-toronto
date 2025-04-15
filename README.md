@@ -1,2 +1,3 @@
-# COMP-44081
-Technical test for competition 44081 - Applied Scientist (Data Scientist)
+# Technical Test for Applied Scientist (Data Scientist) Opportunity No. 44081
+
+
