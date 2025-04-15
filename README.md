@@ -36,6 +36,10 @@ Finally, you should prepare a short summary of what you did, why it is better th
 - Accessible description of the work (bullet points) for a non-technical client,  not exceeding 500 words.
 - A more detailed description of the work with technical specifics that does not exceed 500 words.
 
+> [!NOTE]
+> Reproducibility is a core focus of our team and all our outputs are held to high standards in this respect. We may run your code to verify your solution.
+
+
 ## Submission
 
 Provide a link to the completed modelling exercise on a GitHub account. You can choose to keep the repository private or public. If it is private, you must share your repository with the [gom-ta GitHub account](https://github.com/gom-ta). 
