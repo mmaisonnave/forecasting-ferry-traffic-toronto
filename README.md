@@ -18,7 +18,7 @@ This test is used to evaluate your technical ability and proficiency in writing 
 
 For this exercise, you will use data from the City of Toronto's Open Data Portal. This dataset is related to [ferry tickets](https://open.toronto.ca/dataset/toronto-island-ferry-ticket-counts/) for the Toronto Island Park ferry service.
 
-We have built a simple forecasting model that uses this data predicts the number of redemptions (i.e., people getting on the ferry) at any given time. 
+We have built a simple forecasting model that uses this data to predict the number of redemptions (i.e., people getting on the ferry) at any given time. 
 
 Your task is to:
 
