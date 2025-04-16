@@ -23,9 +23,9 @@ We have built a simple forecasting model that uses this data to predict the numb
 Your task is to:
 
 1. Improve the first forecasting model for redemptions. (30% of points)
-2. Create another forecasting model for the number of sales (i.e., people buying tickets). (30% of points)
+2. Create another forecasting model for the number of sales (i.e., people buying tickets). (40% of points)
 
-*How you go about the task is as important as your model performance* and we are paying attention to your process. You will see some template code has already been started in the repository. You should use this code and built off it with proper development workflows - as if you are collaborating with a colleague (30% of points).
+*How you go about the task is as important as your model performance* and we are paying attention to your process. You will see some template code has already been started in the repository. You should use this code and built off it with proper development workflows - as if you are collaborating with a colleague (20% of points).
 
 Finally, you should prepare a short summary of what you did, why it is better than what we provided, and how you have approached the business problem (10% of points). You should provide an accessible summary of your work in bullet points and plain language, as well as a more detailed description in standard prose. Total words for each summary should not exceed 500.
 
