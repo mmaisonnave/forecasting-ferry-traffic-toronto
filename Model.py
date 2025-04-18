@@ -2,7 +2,6 @@ import pandas as pd
 import statsmodels.api as sm
 from sklearn.metrics import mean_absolute_percentage_error as MAPE
 from sklearn.model_selection import TimeSeriesSplit
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -19,12 +18,17 @@ class RedemptionModel:
         self.target_col = target_col
         self.results = {} # dict of dicts with model results
 
-    def run_models(self):
+    def score(self, truth, preds):
+        # Score our predictions - modify this method as you like
+        return MAPE(truth, preds)
+
+
+    def run_models(self, n_splits=4, test_size=365):
         '''Run the models and store results for cross validated splits in
         self.results.
         '''
         # Time series split
-        tscv = TimeSeriesSplit(n_splits=4, test_size=365)
+        tscv = TimeSeriesSplit(n_splits=n_splits, test_size=test_size)
         cnt = 0 # keep track of splits
         for train, test in tscv.split(self.X):
             X_train = self.X.iloc[train]
@@ -33,27 +37,28 @@ class RedemptionModel:
             preds = self._base_model(X_train, X_test)
             if 'Base' not in self.results:
                 self.results['Base'] = {}
-            self.results['Base'][cnt] = MAPE(X_test[self.target_col],
+            self.results['Base'][cnt] = self.score(X_test[self.target_col],
                                 preds)
             self.plot(preds, 'Base')
             # Other models...
-            # self._my-new-model(train, test) << Add your model here
+            # self._my-new-model(train, test) << Add your model(s) here
             cnt += 1
 
 
-    def _base_model(self, train, test): # this is the one you need to improve upon
+    def _base_model(self, train, test):
         '''
         Our base, too-simple model.
         Your model needs to take the training and test datasets (dataframes)
         and output a prediction based on the test data.
 
+        Please leave this method as-is.
+
         '''
-        arima = sm.tsa.arima.ARIMA(train['Redemption Count'],
-                                exog = train[['monthly', 'quarter']],
-                                order=(3,1,1)).fit()
-        #Your model should return forecasts for the test period
-        return arima.forecast(test.shape[0],
-                            exog = test[['monthly', 'quarter']])
+        res = sm.tsa.seasonal_decompose(train['Redemption Count'],
+                                        period=365)
+        res_clip = res.seasonal.apply(lambda x: max(0,x))
+        return pd.Series(index = test.index.copy(),
+                        data=res_clip.iloc[-test.shape[0]:].values)
 
     def plot(self, preds, label):
         # plot out the forecasts
