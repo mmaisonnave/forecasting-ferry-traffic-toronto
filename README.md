@@ -45,3 +45,12 @@ Finally, you should prepare a short summary of what you did, why it is better th
 ## Submission
 
 Provide a link to the completed modelling exercise on a GitHub account. You can choose to keep the repository private or public. If it is private, you must share your repository with the [gom-ta GitHub account](https://github.com/gom-ta). 
+
+
+## Environment
+
+You will need to install several packages to run the existing code
+
+```python
+pip install pandas seaborn matplotlib statsmodels scikit-learn
+```
