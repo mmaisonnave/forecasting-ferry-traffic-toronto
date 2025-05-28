@@ -57,8 +57,11 @@ class RedemptionModel:
         res = sm.tsa.seasonal_decompose(train['Redemption Count'],
                                         period=365)
         res_clip = res.seasonal.apply(lambda x: max(0,x))
-        return pd.Series(index = test.index.copy(),
-                        data=res_clip.iloc[-test.shape[0]:].values)
+        res_clip.index = res_clip.index.dayofyear
+        res_clip = res_clip.groupby(res_clip.index).mean()
+        res_dict = res_clip.to_dict()
+        return pd.Series(index = test.index, 
+                         data = map(lambda x: res_dict[x], test.index.dayofyear))
 
     def plot(self, preds, label):
         # plot out the forecasts
