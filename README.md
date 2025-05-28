@@ -33,7 +33,7 @@ Finally, you should prepare a short summary of what you did, why it is better th
 
 ## Expected Outcomes
 
-- An improved forecasting model for redemptions.
+- An improved forecasting model for redemptions that can be used to forecast redemption volume on a daily basis.
 - A forecasting model for sales.
 - Accessible description of the work (bullet points) for a non-technical client,  not exceeding 200 words.
 - A more detailed description of the work with technical specifics that does not exceed 500 words.
