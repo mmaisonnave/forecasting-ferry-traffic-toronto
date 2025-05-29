@@ -54,7 +54,7 @@ class RedemptionModel:
         Please leave this method as-is.
 
         '''
-        res = sm.tsa.seasonal_decompose(train['Redemption Count'],
+        res = sm.tsa.seasonal_decompose(train[self.target_col],
                                         period=365)
         res_clip = res.seasonal.apply(lambda x: max(0,x))
         res_clip.index = res_clip.index.dayofyear
