@@ -1,6 +1,8 @@
 import pandas as pd
 import statsmodels.api as sm
 from sklearn.metrics import mean_absolute_percentage_error as MAPE
+from sklearn.metrics import mean_squared_error as MSE
+from sklearn.metrics import mean_absolute_error as MAE
 from sklearn.model_selection import TimeSeriesSplit
 import matplotlib.pyplot as plt
 
@@ -20,7 +22,11 @@ class RedemptionModel:
 
     def score(self, truth, preds):
         # Score our predictions - modify this method as you like
-        return MAPE(truth, preds)
+        return {
+            'MAPE': MAPE(truth[truth!=0], preds[truth!=0]),
+            'MAE': MAE(truth, preds),
+            'MSE': MSE(truth, preds),
+        }
 
 
     def run_models(self, n_splits=4, test_size=365):
