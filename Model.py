@@ -3,13 +3,14 @@ import statsmodels.api as sm
 from sklearn.metrics import mean_absolute_percentage_error as MAPE
 from sklearn.metrics import mean_squared_error as MSE
 from sklearn.metrics import mean_absolute_error as MAE
+from statsmodels.tsa.arima.model import ARIMA
 from sklearn.model_selection import TimeSeriesSplit
 import matplotlib.pyplot as plt
 
 
 class RedemptionModel:
 
-    def __init__(self, X, target_col):
+    def __init__(self, X, target_col, exog_cols):
         '''
         Args:
         X (pandas.DataFrame): Dataset of predictors, output from load_data()
@@ -18,6 +19,7 @@ class RedemptionModel:
         self._predictions = {}
         self.X = X
         self.target_col = target_col
+        self.exog_cols = exog_cols
         self.results = {} # dict of dicts with model results
 
     def score(self, truth, preds):
@@ -38,6 +40,7 @@ class RedemptionModel:
         # other models in a dictionary, so models can be added easily.
         modelname2method = {
             'Historical Average By Day': self._redemptions_from_previous_years_by_day,
+            'ARIMA with Exogenous': self._arima_model_with_exog,
         }
 
         # Time series split
@@ -62,14 +65,6 @@ class RedemptionModel:
                     X_test[self.target_col], preds)
                 self.plot(preds, modelname)
 
-            # if 'Redemptions from previous years' not in self.results:
-            #     self.results['Redemptions from previous years'] = {}
-            # preds = self._redemptions_from_previous_years_by_day(X_train, X_test)
-            # self.results['Redemptions from previous years'][cnt] = self.score(
-            #     X_test[self.target_col], preds)
-            # self.plot(preds, 'Redemptions from previous years')
-            # Other models...
-            # self._my-new-model(train, test) << Add your model(s) here
             cnt += 1
 
 
@@ -91,9 +86,47 @@ class RedemptionModel:
         return pd.Series(index = test.index, 
                          data = map(lambda x: res_dict[x], test.index.dayofyear))
     
+    def _build_exog_prediction_for_test(self, train, test):
+        # Copy part of the data frame:
+        exog_preds = pd.DataFrame(index=test.index)
+        for col in self.exog_cols:
+            history = train[col]
+            history.index = history.index.dayofyear
+            history = history.groupby(history.index).mean()
+            history_dict = history.to_dict()
+            exog_preds[col] = list(map(lambda x: history_dict[x], test.index.dayofyear))
+        return exog_preds
+    
+    
+
+    def _arima_model_with_exog(self, train, test):
+	# Extract the target series
+        y_train = train[self.target_col].reset_index(drop=True)
+        exog_train = train[self.exog_cols].reset_index(drop=True)
+        exog_test = self._build_exog_prediction_for_test(train, test)
+
+        # Fit the ARIMA model
+        model = ARIMA(y_train, order=(2, # P: autoregressive order
+                                    0, # D: differencing order
+                                    5), # Q: moving average order
+                                    exog=exog_train
+                                    ) # (p,d,q)
+                                    
+        model_fit = model.fit()
+        # Forecast for the length of the test set
+        forecast = model_fit.get_forecast(steps=len(test),
+                                          exog=exog_test
+        ).predicted_mean
+        
+        # Return a series with the same index as the test set
+        
+        return pd.Series(forecast.values, index = test.index)
+
+
+
+    
 
     def _redemptions_from_previous_years_by_day(self, train, test):
-        # Copy part of the data frame:
         history = train[self.target_col]
 
         # Transform index to numbers to use groupby
