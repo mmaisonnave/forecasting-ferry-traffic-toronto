@@ -33,6 +33,13 @@ class RedemptionModel:
         '''Run the models and store results for cross validated splits in
         self.results.
         '''
+
+        # As requested, I am leaving the base model in place, I am grouping all
+        # other models in a dictionary, so models can be added easily.
+        modelname2method = {
+            'Historical Average By Day': self._redemptions_from_previous_years_by_day,
+        }
+
         # Time series split
         tscv = TimeSeriesSplit(n_splits=n_splits, test_size=test_size)
         cnt = 0 # keep track of splits
@@ -46,6 +53,21 @@ class RedemptionModel:
             self.results['Base'][cnt] = self.score(X_test[self.target_col],
                                 preds)
             self.plot(preds, 'Base')
+
+            for modelname, method in modelname2method.items():
+                preds = method(X_train, X_test)
+                if modelname not in self.results:
+                    self.results[modelname] = {}
+                self.results[modelname][cnt] = self.score(
+                    X_test[self.target_col], preds)
+                self.plot(preds, modelname)
+
+            # if 'Redemptions from previous years' not in self.results:
+            #     self.results['Redemptions from previous years'] = {}
+            # preds = self._redemptions_from_previous_years_by_day(X_train, X_test)
+            # self.results['Redemptions from previous years'][cnt] = self.score(
+            #     X_test[self.target_col], preds)
+            # self.plot(preds, 'Redemptions from previous years')
             # Other models...
             # self._my-new-model(train, test) << Add your model(s) here
             cnt += 1
@@ -68,6 +90,25 @@ class RedemptionModel:
         res_dict = res_clip.to_dict()
         return pd.Series(index = test.index, 
                          data = map(lambda x: res_dict[x], test.index.dayofyear))
+    
+
+    def _redemptions_from_previous_years_by_day(self, train, test):
+        # Copy part of the data frame:
+        history = train[self.target_col]
+
+        # Transform index to numbers to use groupby
+        history.index = history.index.dayofyear
+
+        # Group by using average as grouping cunction
+        history = history.groupby(history.index).mean()
+
+        # Return the historic average as a prediction.
+        history_dict = history.to_dict()
+        
+        return pd.Series(index = test.index, 
+                        data = map(lambda x: history_dict[x], test.index.dayofyear))
+    
+    
 
     def plot(self, preds, label):
         # plot out the forecasts
