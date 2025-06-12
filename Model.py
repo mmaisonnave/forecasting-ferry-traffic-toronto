@@ -43,7 +43,8 @@ class RedemptionModel:
             'Historical Average By Day': self._redemptions_from_previous_years_by_day,
             'ARIMA with Exogenous': self._arima_model_with_exog,
             'ARIMA with Seasonality': self._arima_with_seasonallity,
-            'Prophet': self._prophet_model,  # <- Add this line
+            'Prophet': self._prophet_model,
+            'Ensemble': self._ensemble_model,
 
         }
 
@@ -198,6 +199,27 @@ class RedemptionModel:
 
         # Prophet returns a 'yhat' column for the prediction
         return pd.Series(forecast['yhat'].values, index=test.index)
+
+
+    def _ensemble_model(self, train, test):
+        '''
+        Simple average ensemble of all other models.
+        '''
+        # Collect predictions from individual models
+        preds_dict = {
+            'Historical Average By Day': self._redemptions_from_previous_years_by_day(train.copy(), test.copy()),
+            'ARIMA with Exogenous': self._arima_model_with_exog(train.copy(), test.copy()),
+            # 'ARIMA with Seasonality': self._arima_with_seasonallity(train.copy(), test.copy()),
+            'Prophet': self._prophet_model(train.copy(), test.copy()),
+        }
+
+        # Convert predictions into a DataFrame for easy averaging
+        preds_df = pd.DataFrame(preds_dict)
+        
+        # Average across models (axis=1)
+        ensemble_preds = preds_df.mean(axis=1)
+
+        return pd.Series(ensemble_preds.values, index=test.index)
 
     def plot(self, preds, label):
         # plot out the forecasts, truncated to dates after 2021
