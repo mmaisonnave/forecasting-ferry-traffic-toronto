@@ -41,6 +41,7 @@ class RedemptionModel:
         modelname2method = {
             'Historical Average By Day': self._redemptions_from_previous_years_by_day,
             'ARIMA with Exogenous': self._arima_model_with_exog,
+            'ARIMA with Seasonality': self._arima_with_seasonallity,
         }
 
         # Time series split
@@ -58,7 +59,7 @@ class RedemptionModel:
             self.plot(preds, 'Base')
 
             for modelname, method in modelname2method.items():
-                preds = method(X_train, X_test)
+                preds = method(X_train.copy(), X_test.copy())
                 if modelname not in self.results:
                     self.results[modelname] = {}
                 self.results[modelname][cnt] = self.score(
@@ -97,6 +98,28 @@ class RedemptionModel:
             exog_preds[col] = list(map(lambda x: history_dict[x], test.index.dayofyear))
         return exog_preds
     
+    def _arima_with_seasonallity(self, train, test):
+        seasonal_train = self._base_model(train, train).reset_index(drop=True)
+        seasonal_test = self._base_model(train, test).reset_index(drop=True)
+
+
+            # Align seasonal with train index for subtraction
+        # seasonal_train = seasonal.loc[train.index]
+        y_train = train[self.target_col].reset_index(drop=True) - seasonal_train
+
+        # Fit the ARIMA model
+        model = ARIMA(
+            y_train,
+            order=(1, 1,  0),  # (p,d,q)
+        )
+        model_fit = model.fit()
+        # Forecast for the length of the test set
+        forecast = model_fit.get_forecast(steps=len(test)).predicted_mean
+        # Add the seasonal component back to the forecast
+        # seasonal_test = seasonal.loc[test.index]
+        forecast += seasonal_test.values
+        # Return a series with the same index as the test set
+        return pd.Series(forecast.values, index=test.index)
     
 
     def _arima_model_with_exog(self, train, test):
@@ -107,8 +130,8 @@ class RedemptionModel:
 
         # Fit the ARIMA model
         model = ARIMA(y_train, order=(2, # P: autoregressive order
-                                    0, # D: differencing order
-                                    5), # Q: moving average order
+                                     0, # D: differencing order
+                                     1), # Q: moving average order
                                     exog=exog_train
                                     ) # (p,d,q)
                                     
@@ -144,9 +167,10 @@ class RedemptionModel:
     
 
     def plot(self, preds, label):
-        # plot out the forecasts
+        # plot out the forecasts, truncated to dates after 2021
+        mask = self.X.index >= pd.Timestamp('2021-01-01')
         fig, ax = plt.subplots(figsize=(15, 5))
-        ax.scatter(self.X.index, self.X[self.target_col], s=0.4, color='grey',
+        ax.scatter(self.X.index[mask], self.X[self.target_col][mask], s=0.4, color='grey',
             label='Observed')
-        ax.plot(preds, label = label, color='red')
+        ax.plot(preds[preds.index >= pd.Timestamp('2021-01-01')], label=label, color='red')
         plt.legend()
