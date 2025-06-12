@@ -4,6 +4,7 @@ from sklearn.metrics import mean_absolute_percentage_error as MAPE
 from sklearn.metrics import mean_squared_error as MSE
 from sklearn.metrics import mean_absolute_error as MAE
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.model_selection import TimeSeriesSplit
 import matplotlib.pyplot as plt
 from prophet import Prophet
@@ -45,6 +46,7 @@ class RedemptionModel:
             'ARIMA with Seasonality': self._arima_with_seasonallity,
             'Prophet': self._prophet_model,
             'Ensemble': self._ensemble_model,
+            'SARIMA': self._sarima_model,
 
         }
 
@@ -211,6 +213,7 @@ class RedemptionModel:
             'ARIMA with Exogenous': self._arima_model_with_exog(train.copy(), test.copy()),
             # 'ARIMA with Seasonality': self._arima_with_seasonallity(train.copy(), test.copy()),
             'Prophet': self._prophet_model(train.copy(), test.copy()),
+            'SARIMA': self._sarima_model(train.copy(), test.copy()),
         }
 
         # Convert predictions into a DataFrame for easy averaging
@@ -220,6 +223,35 @@ class RedemptionModel:
         ensemble_preds = preds_df.mean(axis=1)
 
         return pd.Series(ensemble_preds.values, index=test.index)
+
+
+    def _sarima_model(self, train, test):
+        # Extract the target series
+        y_train = train[self.target_col]
+
+        exog_train = train[self.exog_cols].reset_index(drop=True)
+        exog_test = self._build_exog_prediction_for_test(train, test)
+
+
+        # Reset index to RangeIndex to avoid ValueWarning
+        y_train_reset = y_train.reset_index(drop=True)
+
+        # Fit the ARIMA model
+        model = SARIMAX(y_train_reset,
+                        order=(1,0,0), # (p,d,q)
+                        seasonal_order=(1,1,1,7), # (P,D,Q,s)
+                        enforce_stationarity=False,
+                        enforce_invertibility=False,
+                        exog=exog_train  # Include exogenous variables
+                        )
+
+        model_fit = model.fit()
+
+        # Forecast for the length of the test set
+        forecast = model_fit.get_forecast(steps=len(test), exog=exog_test).predicted_mean
+
+        # Return a series with the same index as the test set
+        return pd.Series(forecast.values, index = test.index)
 
     def plot(self, preds, label):
         # plot out the forecasts, truncated to dates after 2021
