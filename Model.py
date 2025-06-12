@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from prophet import Prophet
 
 
-class RedemptionModel:
+class Model:
 
-    def __init__(self, X, target_col, exog_cols):
+    def __init__(self, X, target_col, experiment_configuration=None):
         '''
         Args:
         X (pandas.DataFrame): Dataset of predictors, output from load_data()
@@ -21,8 +21,8 @@ class RedemptionModel:
         self._predictions = {}
         self.X = X
         self.target_col = target_col
-        self.exog_cols = exog_cols
         self.results = {} # dict of dicts with model results
+        self.experiment_configuration = experiment_configuration
 
     def score(self, truth, preds):
         # Score our predictions - modify this method as you like
@@ -42,12 +42,11 @@ class RedemptionModel:
         # other models in a dictionary, so models can be added easily.
         modelname2method = {
             'Historical Average By Day': self._redemptions_from_previous_years_by_day,
-            'ARIMA with Exogenous': self._arima_model_with_exog,
-            'ARIMA with Seasonality': self._arima_with_seasonallity,
+            'ARIMAX': self._arimax_model,
+            'SARIMAX': self._sarimax_model,
             'Prophet': self._prophet_model,
+            'SARIMA': self._sarimax_model,
             'Ensemble': self._ensemble_model,
-            'SARIMA': self._sarima_model,
-
         }
 
         # Time series split
@@ -93,10 +92,10 @@ class RedemptionModel:
         return pd.Series(index = test.index, 
                          data = map(lambda x: res_dict[x], test.index.dayofyear))
     
-    def _build_exog_prediction_for_test(self, train, test):
+    def _build_exog_prediction_for_test(self, train, test, exog_cols):
         # Copy part of the data frame:
         exog_preds = pd.DataFrame(index=test.index)
-        for col in self.exog_cols:
+        for col in exog_cols:
             history = train[col]
             history.index = history.index.dayofyear
             history = history.groupby(history.index).mean()
@@ -104,27 +103,29 @@ class RedemptionModel:
             exog_preds[col] = list(map(lambda x: history_dict[x], test.index.dayofyear))
         return exog_preds
     
-    def _arima_with_seasonallity(self, train, test):
+    def _sarimax_model(self, train, test):
         seasonal_train = self._base_model(train, train).reset_index(drop=True)
         seasonal_test = self._base_model(train, test).reset_index(drop=True)
 
-
-            # Align seasonal with train index for subtraction
+        # Align seasonal with train index for subtraction
         # seasonal_train = seasonal.loc[train.index]
         y_train = train[self.target_col].reset_index(drop=True) - seasonal_train
 
         # Add one lag for exogenous variables
-        exog_train = train[self.exog_cols].reset_index(drop=True)
+        exog_cols = self.experiment_configuration['ARIMAX']['exog_cols']
+        exog_train = train[exog_cols].reset_index(drop=True)
 
 
-        exog_test = self._build_exog_prediction_for_test(train, test)
-
-
+        exog_test = self._build_exog_prediction_for_test(train, 
+                                                         test, 
+                                                         exog_cols)
 
         # Fit the ARIMA model
         model = ARIMA(
             y_train,
-            order=(1, 1,  0),  # (p,d,q)
+            order=(self.experiment_configuration['ARIMA']['p'], 
+                   self.experiment_configuration['ARIMA']['d'],  
+                   self.experiment_configuration['ARIMA']['q']),  # (p,d,q)
             exog=exog_train  # Include exogenous variables
         )
         model_fit = model.fit()
@@ -137,11 +138,15 @@ class RedemptionModel:
         return pd.Series(forecast.values, index=test.index)
     
 
-    def _arima_model_with_exog(self, train, test):
+    def _arimax_model(self, train, test):
 	# Extract the target series
         y_train = train[self.target_col].reset_index(drop=True)
-        exog_train = train[self.exog_cols].reset_index(drop=True)
-        exog_test = self._build_exog_prediction_for_test(train, test)
+        exog_cols = self.experiment_configuration['ARIMAX']['exog_cols']
+        exog_train = train[exog_cols].reset_index(drop=True)
+        exog_test = self._build_exog_prediction_for_test(train, 
+                                                         test,
+                                                         exog_cols
+                                                         )
 
         # Fit the ARIMA model
         model = ARIMA(y_train, order=(2, # P: autoregressive order
@@ -176,7 +181,7 @@ class RedemptionModel:
         # Return the historic average as a prediction.
         history_dict = history.to_dict()
         
-        return pd.Series(index = test.index, 
+        return pd.Series(index = test.index,
                         data = map(lambda x: history_dict[x], test.index.dayofyear))
     
     
@@ -210,10 +215,10 @@ class RedemptionModel:
         # Collect predictions from individual models
         preds_dict = {
             'Historical Average By Day': self._redemptions_from_previous_years_by_day(train.copy(), test.copy()),
-            'ARIMA with Exogenous': self._arima_model_with_exog(train.copy(), test.copy()),
+            'ARIMA with Exogenous': self._arimax_model(train.copy(), test.copy()),
             # 'ARIMA with Seasonality': self._arima_with_seasonallity(train.copy(), test.copy()),
             'Prophet': self._prophet_model(train.copy(), test.copy()),
-            'SARIMA': self._sarima_model(train.copy(), test.copy()),
+            'SARIMA': self._sarimax_model(train.copy(), test.copy()),
         }
 
         # Convert predictions into a DataFrame for easy averaging
@@ -225,12 +230,16 @@ class RedemptionModel:
         return pd.Series(ensemble_preds.values, index=test.index)
 
 
-    def _sarima_model(self, train, test):
+    def _sarimax_model(self, train, test):
         # Extract the target series
         y_train = train[self.target_col]
 
-        exog_train = train[self.exog_cols].reset_index(drop=True)
-        exog_test = self._build_exog_prediction_for_test(train, test)
+        exog_cols = self.experiment_configuration['SARIMAX']['exog_cols']
+        exog_train = train[exog_cols].reset_index(drop=True)
+        exog_test = self._build_exog_prediction_for_test(train, 
+                                                         test,
+                                                         exog_cols
+                                                         )
 
 
         # Reset index to RangeIndex to avoid ValueWarning
@@ -258,6 +267,6 @@ class RedemptionModel:
         mask = self.X.index >= pd.Timestamp('2021-01-01')
         fig, ax = plt.subplots(figsize=(15, 5))
         ax.scatter(self.X.index[mask], self.X[self.target_col][mask], s=0.4, color='grey',
-            label='Observed')
+            label=self.target_col)
         ax.plot(preds[preds.index >= pd.Timestamp('2021-01-01')], label=label, color='red')
         plt.legend()
