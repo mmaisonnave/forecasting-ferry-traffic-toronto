@@ -6,6 +6,7 @@ from sklearn.metrics import mean_absolute_error as MAE
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.model_selection import TimeSeriesSplit
 import matplotlib.pyplot as plt
+from prophet import Prophet
 
 
 class RedemptionModel:
@@ -42,6 +43,8 @@ class RedemptionModel:
             'Historical Average By Day': self._redemptions_from_previous_years_by_day,
             'ARIMA with Exogenous': self._arima_model_with_exog,
             'ARIMA with Seasonality': self._arima_with_seasonallity,
+            'Prophet': self._prophet_model,  # <- Add this line
+
         }
 
         # Time series split
@@ -107,14 +110,23 @@ class RedemptionModel:
         # seasonal_train = seasonal.loc[train.index]
         y_train = train[self.target_col].reset_index(drop=True) - seasonal_train
 
+        # Add one lag for exogenous variables
+        exog_train = train[self.exog_cols].reset_index(drop=True)
+
+
+        exog_test = self._build_exog_prediction_for_test(train, test)
+
+
+
         # Fit the ARIMA model
         model = ARIMA(
             y_train,
             order=(1, 1,  0),  # (p,d,q)
+            exog=exog_train  # Include exogenous variables
         )
         model_fit = model.fit()
         # Forecast for the length of the test set
-        forecast = model_fit.get_forecast(steps=len(test)).predicted_mean
+        forecast = model_fit.get_forecast(steps=len(test), exog=exog_test).predicted_mean
         # Add the seasonal component back to the forecast
         # seasonal_test = seasonal.loc[test.index]
         forecast += seasonal_test.values
@@ -165,6 +177,27 @@ class RedemptionModel:
                         data = map(lambda x: history_dict[x], test.index.dayofyear))
     
     
+    def _prophet_model(self, train, test):
+        '''
+        Prophet model using only the target variable for forecasting.
+        '''
+        # Prepare the data for Prophet: rename columns as expected
+        df = train[[self.target_col]].reset_index()
+        df = df.rename(columns={df.columns[0]: 'ds', self.target_col: 'y'})
+
+        # Initialize and fit the model
+        model = Prophet(yearly_seasonality=True, daily_seasonality=False, weekly_seasonality=True)
+        model.fit(df)
+
+        # Build future dataframe for prediction
+        future = test.reset_index().rename(columns={'index': 'ds'})
+
+        future = test.reset_index()
+        future = future.rename(columns={future.columns[0]: 'ds'})
+        forecast = model.predict(future)
+
+        # Prophet returns a 'yhat' column for the prediction
+        return pd.Series(forecast['yhat'].values, index=test.index)
 
     def plot(self, preds, label):
         # plot out the forecasts, truncated to dates after 2021
