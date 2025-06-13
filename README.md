@@ -2,29 +2,62 @@
 
 __Opportunity No. 44081__
 
-## 1. Task
+## Executive Summary (Accessible description) (200 words)
+* The project aimed to improve forecasting of a daily ferry ticket redemptions base model and create a new forecast model for daily ticket sales, using a 365-day forecast window.
+* Six different models were tested, including simple averages, traditional time series models such as ARIMAX and SARIMAX, and Prophet, a forecasting tool developed by Meta. The best results came from combining several models in an ensemble.
+* The data showed strong seasonal patterns, with higher ticket sales during warmer months.
+* The ensemble approach reduced forecasting errors by about 39 percent compared to the original baseline model.
+* The long forecast horizon limits the use of some variables, such as weather, since future values are unknown at prediction time. For example, a model can be built to leverage weather data, but future weather is not available when forecasting the next year of sales.
+* In this context of a long forecasting window and limited variables, simpler and more interpretable models such as SARIMAX outperformed more advanced tools like Prophet.
+* Future improvements could include incorporating known-in-advance calendar data such as holidays and school breaks, exploring other state-of-the-art models such as LSTM or Transformers, and estimating uncertainty to support better decision-making.
 
-This project tackles a forecasting task using the Toronto Island Ferry Ticket dataset, with two objectives: (1) improve a base model for predicting daily ticket redemptions, and (2) build a new model to forecast daily ticket sales. A 365-day forecast horizon is used, as defined in the base model, limiting the use of future exogenous variables (such as weather), which are unreliable that far ahead. Models relied on historical patterns to capture strong seasonality. Calendar features (holidays, school breaks) were excluded but noted for future work.
 
-## 2. Data
+## Installation and Execution:
+
+```
+# Create a Python Virtual Environment and activate it (Recommended)
+python -m venv myenv
+source myenv/bin/activate
+
+# Install dependencies in Environment
+pip install -r requirements.txt
+
+```
+
+* Run the notebooks to explore each component of the project:
+    * `Modelling.ipynb`: Runs redemption forecasting models.
+    * `Sales_Modelling.ipynb`: Runs sales forecasting models.
+    * `exploratory-data-analysis.ipynb`: Contains data exploration and visualizations.
+
+* The `Model.py` module defines a forecasting class used across both modeling notebooks. It supports using one time series as an exogenous regressor for the other.
+* Original datasets and results are available in the `data/` directory.
+
+
+## Full Report (500 words)
+
+### 1. Task
+
+This project tackles a forecasting task using the [Toronto Island Ferry Ticket dataset](https://open.toronto.ca/dataset/toronto-island-ferry-ticket-counts/), with two objectives: (1) improve a base model for predicting daily ticket redemptions, and (2) build a new model to forecast daily ticket sales. A 365-day forecast horizon is used, as defined in the base model, limiting the use of future exogenous variables (such as weather), which are unreliable when forecasting that far ahead. Models relied on historical patterns to capture strong seasonality. Calendar features (holidays, school breaks) were excluded but noted for future work.
+
+### 2. Data
 The original dataset records ferry ticket sales and redemptions at 15-minute intervals. As done with the base model, this data was aggregated to daily frequency, producing two daily time series: sales and redemption counts.
 
 The series exhibit strong seasonal patterns, peaking during warmer months. Model performance was evaluated using an expanding window with four train/test splits, where each training set grew incrementally and the subsequent 365 days served as unseen test data. To prevent data leakage and ensure realistic forecasting, only features available at training time were used, with test data reserved strictly for evaluation, assuming no knowledge of future exogenous variables.
 
-## 3. Models
+### 3. Models
 
 Six forecasting models were implemented for both target variables:
 
-- Historical Average by Day: A simple benchmark using daily averages from the training set as predictions.
-- ARIMA-based Models (ARIMAX, ARIMAX on Residuals, SARIMAX): Autoregressive models with exogenous inputs. To forecast one target (sales or redemptions), the other was used as a regressor. Since future values were unavailable for the 365-day test period, test-time regressors were replaced with historical daily averages from the training set. ARIMAX on Residuals was applied after removing seasonality; the seasonal component for the test set was estimated using the Base Model and added back to create the final forecasts. SARIMAX extended ARIMAX by incorporating seasonal terms.
-- Prophet: A forecasting tool developed by Meta that fits non-linear trends with additive yearly, weekly, and daily seasonality.
-- Ensemble: An average of forecasts from ARIMAX, SARIMAX, Prophet, and the Historical Average. ARIMAX on Residuals was excluded due to reduced performance.
+* Historical Average by Day: A simple benchmark using daily averages from the training set as predictions.
+* ARIMA-based Models (ARIMAX, ARIMAX on Residuals, SARIMAX): Autoregressive models with exogenous inputs. To forecast one target (sales or redemptions), the other was used as a regressor. Since future values were unavailable for the 365-day test period, test-time regressors were replaced with historical daily averages from the training set. ARIMAX on Residuals was applied after removing seasonality; the seasonal component for the test set was estimated using the Base Model and added back to create the final forecasts. SARIMAX extended ARIMAX by incorporating seasonal terms.
+* Prophet: A forecasting tool developed by Meta that fits non-linear trends with additive yearly, weekly, and daily seasonality.
+* Ensemble: An average of forecasts from ARIMAX, SARIMAX, Prophet, and the Historical Average. ARIMAX on Residuals was excluded due to reduced performance.
 
 Hyperparameters were tuned using greedy search, guided by exploratory techniques such as stationarity checks (ADF), decomposition (STL), and autocorrelation analysis (ACF/PACF), see Exploratory Data Analysis notebook.
 
-## 4. Results
+### 4. Results
 
-The ensemble model delivered the best performance in both tasks. Performance was measured using Mean Absolute Error (MAE), Mean Squared Error (MSE), and Mean Absolute Percentage Error (MAPE) on the 365-day test horizon averaged over four splits.
+The ensemble model delivered the best performance in both tasks. Performance was measured using Mean Absolute Error ([MAE](https://en.wikipedia.org/wiki/Mean_absolute_error)), Mean Squared Error ([MSE](https://en.wikipedia.org/wiki/Mean_squared_error)), and Mean Absolute Percentage Error ([MAPE](https://en.wikipedia.org/wiki/Mean_absolute_percentage_error)) on the 365-day test horizon averaged over four splits.
 
 **Redemption Forecasting Models:**
 
@@ -49,7 +82,7 @@ The ensemble model delivered the best performance in both tasks. Performance was
 | **MSE**  | Base     | 12,792,470.29 | 5,660,765.93 | [3,784,928.48, 21,800,012.10] |
 |          | Ensemble | 5,982,077.00  | 2,466,846.79 | [2,056,773.27, 9,907,380.73]  |
 
-All results here.
+All results [here](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/data/all_formatted_results.txt).
 
-## 5. Conclusions and Future Work
-The experiments produced effective models for both tasks. Simple intepretable models like SARIMAX outperformed advanced ones like Prophet, showing that in long forecasting windows with limited features, simpler methods suffice. A simple ensemble achieved the best results, cutting MAE by ~39% for sales and redemptions forecasting. Future work could include known events (e.g., holidays), explore neural models (LSTMs, Transformers), and adopt probabilistic forecasting for uncertainty quantification.
+### 5. Conclusions and Future Work
+The experiments produced effective models for both tasks. Simple interpretable models like SARIMAX outperformed advanced ones like Prophet, showing that in long forecasting windows with limited features, simpler methods suffice. A simple ensemble achieved the best results, cutting MAE by ~39% for sales and redemption forecasting. Future work could include known events (e.g., holidays), explore neural models (LSTMs, Transformers), and adopt probabilistic forecasting for uncertainty quantification.
