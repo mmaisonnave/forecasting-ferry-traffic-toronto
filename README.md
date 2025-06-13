@@ -36,17 +36,17 @@ pip install -r requirements.txt
 
 ### Redemptions Forecasting models, base vs best model (ensemble)
 
-![Base Redemption Forecasting Model](data/base_redemptions.png)
+![Base Redemption Forecasting Model](few_example_plots/base_redemptions.png)
 
-![Ensemble Redemption Forecasting Model](data/ensemble_redemptions.png)
+![Ensemble Redemption Forecasting Model](few_example_plots/ensemble_redemptions.png)
 
 See plots for the other models in notebook: `Modelling.ipynb`. 
 
 ### Sales Forecasting models, base vs best model (ensemble)
 
-![Base Sales Forecasting Model](data/base_sales.png)
+![Base Sales Forecasting Model](few_example_plots/base_sales.png)
 
-![Ensemble Sales Forecasting Model](data/ensemble_sales.png)
+![Ensemble Sales Forecasting Model](few_example_plots/ensemble_sales.png)
 
 
 See plots for the other models in notebook: `Sales_Modelling.ipynb`. 
