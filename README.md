@@ -40,11 +40,16 @@ pip install -r requirements.txt
 
 ![Ensemble Redemption Forecasting Model](data/ensemble_redemptions.png)
 
+See plots for the other models in notebook: `Modelling.ipynb`. 
+
 ### Sales Forecasting models, base vs best model (ensemble)
 
 ![Base Sales Forecasting Model](data/base_sales.png)
 
 ![Ensemble Sales Forecasting Model](data/ensemble_sales.png)
+
+
+See plots for the other models in notebook: `Sales_Modelling.ipynb`. 
 
 
 ## Full Report (500 words)
