@@ -34,22 +34,22 @@ pip install -r requirements.txt
 
 ## Demo forecasting: 
 
-### Redemptions Forecasting models, base vs best model (ensemble)
+### Redemptions Forecasting models for the fourth train/test split: base vs best model (ensemble)
 
 ![Base Redemption Forecasting Model](few_example_plots/base_redemptions.png)
 
 ![Ensemble Redemption Forecasting Model](few_example_plots/ensemble_redemptions.png)
 
-See plots for the other models in notebook: [`Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Modelling.ipynb). 
+See the plots for the other models in notebook: [`Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Modelling.ipynb). 
 
-### Sales Forecasting models, base vs best model (ensemble)
+### Sales Forecasting models for the fourth train/test split: base vs best model (ensemble)
 
 ![Base Sales Forecasting Model](few_example_plots/base_sales.png)
 
 ![Ensemble Sales Forecasting Model](few_example_plots/ensemble_sales.png)
 
 
-See plots for the other models in notebook: [`Sales_Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Sales_Modelling.ipynb). 
+See the plots for the other models in notebook: [`Sales_Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Sales_Modelling.ipynb). 
 
 
 ## Full Report (500 words)
