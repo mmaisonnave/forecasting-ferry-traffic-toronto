@@ -25,12 +25,12 @@ pip install -r requirements.txt
 ```
 
 * Run the notebooks to explore each component of the project:
-    * `Modelling.ipynb`: Runs redemption forecasting models.
-    * `Sales_Modelling.ipynb`: Runs sales forecasting models.
-    * `exploratory-data-analysis.ipynb`: Contains data exploration and visualizations.
+    * [`Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Modelling.ipynb): Runs redemption forecasting models.
+    * [`Sales_Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Sales_Modelling.ipynb): Runs sales forecasting models.
+    * [`exploratory-data-analysis.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/exploratory-data-analysis.ipynb): Contains data exploration and visualizations.
 
-* The `Model.py` module defines a forecasting class used across both modeling notebooks. It supports using one time series as an exogenous regressor for the other.
-* Original datasets and results are available in the `data/` directory.
+* The [`Model.py`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Model.py) module defines a forecasting class used across both modeling notebooks. It supports using one time series as an exogenous regressor for the other.
+* Original datasets and results are available in the [`data/`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/tree/main/data) directory.
 
 ## Demo forecasting: 
 
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 ![Ensemble Redemption Forecasting Model](few_example_plots/ensemble_redemptions.png)
 
-See plots for the other models in notebook: `Modelling.ipynb`. 
+See plots for the other models in notebook: [`Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Modelling.ipynb). 
 
 ### Sales Forecasting models, base vs best model (ensemble)
 
@@ -49,7 +49,7 @@ See plots for the other models in notebook: `Modelling.ipynb`.
 ![Ensemble Sales Forecasting Model](few_example_plots/ensemble_sales.png)
 
 
-See plots for the other models in notebook: `Sales_Modelling.ipynb`. 
+See plots for the other models in notebook: [`Sales_Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Sales_Modelling.ipynb). 
 
 
 ## Full Report (500 words)
