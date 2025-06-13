@@ -32,6 +32,20 @@ pip install -r requirements.txt
 * The `Model.py` module defines a forecasting class used across both modeling notebooks. It supports using one time series as an exogenous regressor for the other.
 * Original datasets and results are available in the `data/` directory.
 
+## Demo forecasting: 
+
+### Redemptions Forecasting models, base vs best model (ensemble)
+
+![Base Redemption Forecasting Model](data/base_redemptions.png)
+
+![Ensemble Redemption Forecasting Model](data/ensemble_redemptions.png)
+
+### Sales Forecasting models, base vs best model (ensemble)
+
+![Base Sales Forecasting Model](data/base_sales.png)
+
+![Ensemble Sales Forecasting Model](data/ensemble_sales.png)
+
 
 ## Full Report (500 words)
 
@@ -83,6 +97,7 @@ The ensemble model delivered the best performance in both tasks. Performance was
 |          | Ensemble | 5,982,077.00  | 2,466,846.79 | [2,056,773.27, 9,907,380.73]  |
 
 All results [here](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/data/all_formatted_results.txt).
+
 
 ### 5. Conclusions and Future Work
 The experiments produced effective models for both tasks. Simple interpretable models like SARIMAX outperformed advanced ones like Prophet, showing that in long forecasting windows with limited features, simpler methods suffice. A simple ensemble achieved the best results, cutting MAE by ~39% for sales and redemption forecasting. Future work could include known events (e.g., holidays), explore neural models (LSTMs, Transformers), and adopt probabilistic forecasting for uncertainty quantification.
