@@ -10,6 +10,7 @@ __Opportunity No. 44081__
 * The long forecast horizon limits the use of some variables, such as weather, since future values are unknown at prediction time. For example, a model can be built to leverage weather data, but future weather is not available when forecasting the next year of sales.
 * In this context of a long forecasting window and limited variables, simpler and more interpretable models such as SARIMAX outperformed more advanced tools like Prophet.
 * Future improvements could include incorporating known-in-advance calendar data such as holidays and school breaks, exploring other state-of-the-art models such as LSTM or Transformers, and estimating uncertainty to support better decision-making.
+* The full report is available at the end of this README.
 
 
 ## Installation and Execution:
@@ -50,6 +51,7 @@ See the plots for the other models in notebook: [`Modelling.ipynb`](https://gith
 
 
 See the plots for the other models in notebook: [`Sales_Modelling.ipynb`](https://github.com/mmaisonnave/forecasting-ferry-traffic-toronto/blob/main/Sales_Modelling.ipynb). 
+
 
 
 ## Full Report (500 words)
